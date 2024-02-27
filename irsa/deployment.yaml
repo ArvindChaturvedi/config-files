@@ -21,7 +21,9 @@ spec:
           value: "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:YOUR_SECRET_NAME"
         command: ["/bin/sh", "-c"]
         args:
-          - aws secretsmanager get-secret-value --secret-id $SECRET_ID --query SecretString --output text > /mnt/secrets/splunk_hec_token
+          - |
+            echo -n "$(aws secretsmanager get-secret-value --secret-id $SECRET_ID --query SecretString --output text)" > /mnt/secrets/splunk_hec_token
+            kubectl create secret generic splunk-secret --from-file=splunk_hec_token=/mnt/secrets/splunk_hec_token --dry-run=client -o yaml | kubectl apply -f -
         volumeMounts:
         - name: secrets-volume
           mountPath: /mnt/secrets
@@ -31,7 +33,7 @@ spec:
         - name: SPLUNK_HEC_TOKEN
           valueFrom:
             secretKeyRef:
-              name: my-secret
+              name: splunk-secret
               key: splunk_hec_token
       volumes:
       - name: secrets-volume
