@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 	"github.com/signalfx/splunk-otel-go/distro"
 )
 
@@ -18,16 +19,18 @@ func main() {
 		}
 	}()
 
-	resp, err := http.Get("http://www.google.com")
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		fmt.Println("Google is up and running!")
-	} else {
-		fmt.Println("Google is not responding correctly")
+	for {
+		resp, err := http.Get("http://www.google.com")
+		if err != nil {
+			fmt.Println("Error:", err)
+		} else {
+			resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				fmt.Println("Google is up and running!")
+			} else {
+				fmt.Println("Google is not responding correctly")
+			}
+		}
+		time.Sleep(5 * time.Second) // Wait for 5 seconds before pinging again
 	}
 }

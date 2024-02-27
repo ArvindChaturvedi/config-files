@@ -1,13 +1,17 @@
-# Use the official golang image to create a build
-FROM golang:1.22 AS builder
+# Use the official golang image as the base image
+FROM golang:1.22
 
+# Set the working directory inside the container
 WORKDIR /app
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o myapp
 
-# Use a minimal base image to run the application
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=builder /app/myapp .
+# Copy the Go application source code to the container
+COPY . .
+
+# Build the Go application inside the container
+RUN go build -o myapp
+
+# Expose the port that the application listens on
+EXPOSE 8080
+
+# Command to run the application
 CMD ["./myapp"]

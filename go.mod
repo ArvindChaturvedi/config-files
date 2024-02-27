@@ -1,6 +1,6 @@
-module google.com/m
+module google.com/ueks-sample
 
-go 1.22
+go 1.22.0
 
 require github.com/signalfx/splunk-otel-go/distro v1.14.0
 
