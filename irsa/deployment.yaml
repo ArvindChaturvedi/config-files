@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      serviceAccountName: my-service-account
+      containers:
+      - name: init-container
+        image: amazon/aws-cli:latest
+        env:
+        - name: SECRET_ID
+          value: "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:YOUR_SECRET_NAME"
+        command: ["/bin/sh", "-c"]
+        args:
+          - aws secretsmanager get-secret-value --secret-id $SECRET_ID --query SecretString --output text > /mnt/secrets/splunk_hec_token
+        volumeMounts:
+        - name: secrets-volume
+          mountPath: /mnt/secrets
+      - name: my-container
+        image: your-image:tag
+        env:
+        - name: SPLUNK_HEC_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: my-secret
+              key: splunk_hec_token
+      volumes:
+      - name: secrets-volume
+        emptyDir: {}
