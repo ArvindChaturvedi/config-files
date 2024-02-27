@@ -1,12 +1,13 @@
-# Build stage
-FROM golang:1.16 AS build
+# Use the official golang image to create a build
+FROM golang:1.22 AS builder
+
 WORKDIR /app
 COPY . .
-RUN go build -o sample-app
+RUN CGO_ENABLED=0 GOOS=linux go build -o myapp
 
-# Final stage
+# Use a minimal base image to run the application
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
-COPY --from=build /app/sample-app .
-CMD ["./sample-app"]
+COPY --from=builder /app/myapp .
+CMD ["./myapp"]
