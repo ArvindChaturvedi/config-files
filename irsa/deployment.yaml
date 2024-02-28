@@ -17,13 +17,19 @@ spec:
       - name: init-container
         image: amazon/aws-cli:latest
         env:
+        - name: AWS_REGION
+          value: "YOUR_AWS_REGION"   # Update with your AWS region
         - name: SECRET_ID
-          value: "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:YOUR_SECRET_NAME"
+          value: "arn:aws:secretsmanager:YOUR_AWS_REGION:YOUR_ACCOUNT_ID:secret:YOUR_SECRET_NAME"  # Update with your AWS Secrets Manager ARN
+        - name: SPLUNK_HEC_TOKEN
+          value: "placeholder"  # Placeholder value to be replaced during runtime
         command: ["/bin/sh", "-c"]
         args:
           - |
-            echo -n "$(aws secretsmanager get-secret-value --secret-id $SECRET_ID --query SecretString --output text)" > /mnt/secrets/splunk_hec_token
-            kubectl create secret generic splunk-secret --from-file=splunk_hec_token=/mnt/secrets/splunk_hec_token --dry-run=client -o yaml | kubectl apply -f -
+            SPLUNK_HEC_TOKEN=$(aws secretsmanager get-secret-value --region $AWS_REGION --secret-id $SECRET_ID --query SecretString --output text)
+            echo "SPLUNK_HEC_TOKEN=$SPLUNK_HEC_TOKEN" > /mnt/secrets/splunk_hec_token
+            kubectl create secret generic splunk-secret --from-file=splunk_hec_token=/mnt/secrets/splunk_hec_token --dry-run=client -o yaml > /tmp/splunk-secret.yaml
+            kubectl apply -f /tmp/splunk-secret.yaml
         volumeMounts:
         - name: secrets-volume
           mountPath: /mnt/secrets
