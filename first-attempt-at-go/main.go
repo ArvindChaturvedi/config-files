@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"github.com/signalfx/splunk-otel-go/instrumentation/net/http/splunkhttp"
 	"github.com/signalfx/splunk-otel-go/distro"
 )
 
